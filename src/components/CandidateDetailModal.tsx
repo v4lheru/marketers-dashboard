@@ -21,6 +21,13 @@ export default function CandidateDetailModal({ candidate, onClose }: CandidateDe
     fetchDocuments();
   }, [candidate.id]);
 
+  useEffect(() => {
+    // Auto-select first document when documents are loaded
+    if (documents.length > 0 && !selectedDocument) {
+      setSelectedDocument(documents[0]);
+    }
+  }, [documents]);
+
   const fetchDocuments = async () => {
     try {
       setLoadingDocuments(true);
