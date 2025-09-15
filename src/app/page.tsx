@@ -49,17 +49,10 @@ export default function Dashboard() {
         query = query.eq('looking_for', filters.looking_for);
       }
 
-      // Apply sorting
-      if (filters.sort_by === 'overall_score') {
-        query = query.order('candidate_analyses.overall_score', { 
-          ascending: filters.sort_order === 'asc',
-          nullsFirst: false 
-        });
-      } else {
-        query = query.order(filters.sort_by || 'created_at', { 
-          ascending: filters.sort_order === 'asc' 
-        });
-      }
+      // Simple sorting on applications table only
+      query = query.order(filters.sort_by || 'created_at', { 
+        ascending: filters.sort_order === 'asc' 
+      });
 
       const { data, error } = await query;
       
@@ -69,11 +62,20 @@ export default function Dashboard() {
       }
 
       // Process the data to flatten the relationships
-      const processedData = data?.map(app => ({
+      let processedData = data?.map(app => ({
         ...app,
         candidate_analysis: app.candidate_analysis?.[0] || null,
         document_count: app.documents?.length || 0,
       })) || [];
+
+      // Handle score-based sorting after data processing
+      if (filters.sort_by === 'overall_score') {
+        processedData.sort((a, b) => {
+          const scoreA = a.candidate_analysis?.overall_score || 0;
+          const scoreB = b.candidate_analysis?.overall_score || 0;
+          return filters.sort_order === 'asc' ? scoreA - scoreB : scoreB - scoreA;
+        });
+      }
 
       setCandidates(processedData);
     } catch (error) {
