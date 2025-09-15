@@ -97,13 +97,6 @@ export default function Dashboard() {
       if (!matchesSearch) return false;
     }
 
-    // Score filter
-    if (filters.score_min && candidate.candidate_analysis?.overall_score) {
-      if (candidate.candidate_analysis.overall_score < filters.score_min) {
-        return false;
-      }
-    }
-
     return true;
   });
 
@@ -202,26 +195,6 @@ export default function Dashboard() {
               <option value="freelance">Freelance</option>
             </select>
 
-            <select
-              className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
-              value={filters.score_min ? `${filters.score_min}+` : ''}
-              onChange={(e) => {
-                const value = e.target.value;
-                if (value === '') {
-                  setFilters({...filters, score_min: undefined});
-                } else {
-                  const score = parseInt(value.replace('+', ''));
-                  setFilters({...filters, score_min: score});
-                }
-              }}
-            >
-              <option value="">All Scores</option>
-              <option value="95+">95+ Excellent</option>
-              <option value="90+">90+ Great</option>
-              <option value="85+">85+ Good</option>
-              <option value="80+">80+ Fair</option>
-              <option value="70+">70+ Below Average</option>
-            </select>
 
             <select
               className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
