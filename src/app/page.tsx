@@ -32,7 +32,6 @@ export default function Dashboard() {
   const fetchCandidates = async () => {
     try {
       setLoading(true);
-      console.log('Starting to fetch candidates...');
       
       let query = supabase
         .from('applications')
@@ -62,13 +61,10 @@ export default function Dashboard() {
         });
       }
 
-      console.log('Executing Supabase query...');
       const { data, error } = await query;
-
-      console.log('Query result:', { data: data?.length, error });
       
       if (error) {
-        console.error('Supabase error details:', error);
+        console.error('Error fetching candidates:', error);
         return;
       }
 
@@ -79,10 +75,9 @@ export default function Dashboard() {
         document_count: app.documents?.length || 0,
       })) || [];
 
-      console.log('Processed data length:', processedData.length);
       setCandidates(processedData);
     } catch (error) {
-      console.error('Fetch candidates error:', error);
+      console.error('Error:', error);
     } finally {
       setLoading(false);
     }
