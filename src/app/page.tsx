@@ -17,6 +17,61 @@ export default function Dashboard() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCandidate, setSelectedCandidate] = useState<CandidateWithAnalysis | null>(null);
 
+  // Copy submission data function
+  const copySubmissionData = async (candidate: CandidateWithAnalysis) => {
+    try {
+      // Fetch documents for this candidate
+      const { data: documents } = await supabase
+        .from('candidate_documents')
+        .select('*')
+        .eq('application_id', candidate.id);
+
+      const submissionData = {
+        candidate_info: {
+          id: candidate.id,
+          name: `${candidate.first_name} ${candidate.last_name}`,
+          email: candidate.email,
+          linkedin_url: candidate.linkedin_url,
+          looking_for: candidate.looking_for,
+          created_at: candidate.created_at
+        },
+        form_data: candidate.form_data,
+        resume_data: documents?.map(doc => ({
+          filename: doc.original_filename,
+          content: doc.extracted_content,
+          file_type: doc.file_type,
+          processing_status: doc.processing_status
+        })) || [],
+        linkedin_data: {
+          scraped_content: candidate.scraped_content,
+          scraped_linkedin: candidate.scraped_linkedin
+        },
+        analysis_data: candidate.candidate_analysis ? {
+          overall_score: candidate.candidate_analysis.overall_score,
+          category_scores: candidate.candidate_analysis.category_scores,
+          strengths: candidate.candidate_analysis.strengths,
+          weaknesses: candidate.candidate_analysis.weaknesses,
+          red_flags: candidate.candidate_analysis.red_flags,
+          next_steps: candidate.candidate_analysis.next_steps,
+          fit_assessment: candidate.candidate_analysis.fit_assessment,
+          recommendations: candidate.candidate_analysis.recommendations,
+          linkedin_data: candidate.candidate_analysis.linkedin_data,
+          portfolio_data: candidate.candidate_analysis.portfolio_data,
+          documents_data: candidate.candidate_analysis.documents_data
+        } : null
+      };
+
+      const formattedData = JSON.stringify(submissionData, null, 2);
+      await navigator.clipboard.writeText(formattedData);
+      
+      // Show success feedback
+      alert('Submission data copied to clipboard!');
+    } catch (error) {
+      console.error('Error copying submission data:', error);
+      alert('Failed to copy submission data');
+    }
+  };
+
   // Enhanced stats with filtered counts
   const totalCandidates = candidates.length;
   const analyzedCandidates = candidates.filter(c => c.candidate_analysis?.overall_score).length;
@@ -476,7 +531,7 @@ export default function Dashboard() {
       {/* Candidates Table */}
       <div className="bg-white rounded-lg border shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200 table-fixed">
+          <table className="w-full divide-y divide-gray-200" style={{minWidth: '1400px'}}>
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -585,10 +640,10 @@ export default function Dashboard() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <button
-                        onClick={() => setSelectedCandidate(candidate)}
-                        className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm font-medium"
+                        onClick={() => copySubmissionData(candidate)}
+                        className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm font-medium"
                       >
-                        View Details
+                        Copy Submission
                       </button>
                     </td>
                   </tr>
