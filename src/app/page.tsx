@@ -224,14 +224,21 @@ export default function Dashboard() {
               onChange={(e) => setFilters({...filters, specialization: e.target.value || undefined})}
             >
               <option value="">All Specializations</option>
-              <option value="SEO">SEO/SEM</option>
+              <option value="SEO">SEO/SEM & Performance</option>
               <option value="Social">Social Media</option>
               <option value="Content">Content Marketing</option>
               <option value="Email">Email Marketing</option>
               <option value="Analytics">Analytics & Data</option>
               <option value="Brand">Brand & Creative</option>
-              <option value="Performance">Performance Marketing</option>
+              <option value="Paid Advertising">Paid Advertising</option>
+              <option value="Conversion">Conversion Rate Optimization</option>
+              <option value="Lead Generation">Lead & Demand Generation</option>
+              <option value="Influencer">Influencer Marketing</option>
+              <option value="Product Marketing">Product Marketing</option>
+              <option value="PR">PR & Communications</option>
+              <option value="Digital Strategy">Digital Strategy</option>
               <option value="Automation">Marketing Automation</option>
+              <option value="Event">Event & Experiential</option>
             </select>
 
             <select
