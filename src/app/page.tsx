@@ -339,7 +339,7 @@ export default function Dashboard() {
                     <td className="px-6 py-4">
                       <div className="text-xs text-gray-700 max-w-xs">
                         {keySkills.length > 0 ? (
-                          keySkills.map((skill, index) => (
+                          keySkills.map((skill: string, index: number) => (
                             <div key={index} className="truncate mb-1">
                               • {skill.trim()}
                             </div>
