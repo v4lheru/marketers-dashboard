@@ -120,12 +120,16 @@ export default function Dashboard() {
       if (!hasSpecialization) return false;
     }
 
-    // Community filter
-    if (filters.community) {
-      const communityMatch = filters.community === 'yes' 
-        ? candidate.form_data?.communityParticipation === true
-        : candidate.form_data?.communityParticipation === false;
-      if (!communityMatch) return false;
+    // Rate filter
+    if (filters.rate_range) {
+      const candidateRate = candidate.form_data?.desiredSalary || candidate.form_data?.hourlyRate || '';
+      const rateNumber = parseInt(candidateRate.replace(/[^0-9]/g, '')) || 0;
+      
+      if (filters.rate_range === '0-30000' && rateNumber > 30000) return false;
+      if (filters.rate_range === '30000-50000' && (rateNumber < 30000 || rateNumber > 50000)) return false;
+      if (filters.rate_range === '50000-75000' && (rateNumber < 50000 || rateNumber > 75000)) return false;
+      if (filters.rate_range === '75000-100000' && (rateNumber < 75000 || rateNumber > 100000)) return false;
+      if (filters.rate_range === '100000+' && rateNumber < 100000) return false;
     }
 
     return true;
@@ -195,7 +199,7 @@ export default function Dashboard() {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               <input
                 type="text"
-                placeholder="Search candidates..."
+                placeholder="Search by name, email, skills, or specializations..."
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -232,12 +236,15 @@ export default function Dashboard() {
 
             <select
               className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
-              value={filters.community || ''}
-              onChange={(e) => setFilters({...filters, community: e.target.value || undefined})}
+              value={filters.rate_range || ''}
+              onChange={(e) => setFilters({...filters, rate_range: e.target.value || undefined})}
             >
-              <option value="">All Community</option>
-              <option value="yes">Community: Yes</option>
-              <option value="no">Community: No</option>
+              <option value="">All Rates</option>
+              <option value="0-30000">$0-30k</option>
+              <option value="30000-50000">$30k-50k</option>
+              <option value="50000-75000">$50k-75k</option>
+              <option value="75000-100000">$75k-100k</option>
+              <option value="100000+">$100k+</option>
             </select>
 
             <select

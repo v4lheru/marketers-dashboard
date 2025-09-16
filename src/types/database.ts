@@ -60,7 +60,7 @@ export interface FilterOptions {
   status?: string;
   looking_for?: string;
   specialization?: string;
-  community?: string;
+  rate_range?: string;
   score_min?: number;
   score_max?: number;
   search?: string;
