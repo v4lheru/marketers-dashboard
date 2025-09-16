@@ -54,10 +54,8 @@ export default function Dashboard() {
         query = query.eq('looking_for', filters.looking_for);
       }
 
-      // Simple sorting on applications table only
-      query = query.order(filters.sort_by || 'created_at', { 
-        ascending: filters.sort_order === 'asc' 
-      });
+      // Always sort by created_at in query, then handle other sorting in JavaScript
+      query = query.order('created_at', { ascending: false });
 
       const { data, error } = await query;
       
@@ -73,12 +71,34 @@ export default function Dashboard() {
         document_count: app.documents?.length || 0,
       })) || [];
 
-      // Handle score-based sorting after data processing
+      // Handle all sorting after data processing
       if (filters.sort_by === 'overall_score') {
         processedData.sort((a, b) => {
           const scoreA = a.candidate_analysis?.overall_score || 0;
           const scoreB = b.candidate_analysis?.overall_score || 0;
           return filters.sort_order === 'asc' ? scoreA - scoreB : scoreB - scoreA;
+        });
+      } else if (filters.sort_by === 'first_name') {
+        processedData.sort((a, b) => {
+          const nameA = a.first_name?.toLowerCase() || '';
+          const nameB = b.first_name?.toLowerCase() || '';
+          return filters.sort_order === 'asc' 
+            ? nameA.localeCompare(nameB)
+            : nameB.localeCompare(nameA);
+        });
+      } else if (filters.sort_by === 'last_name') {
+        processedData.sort((a, b) => {
+          const nameA = a.last_name?.toLowerCase() || '';
+          const nameB = b.last_name?.toLowerCase() || '';
+          return filters.sort_order === 'asc' 
+            ? nameA.localeCompare(nameB)
+            : nameB.localeCompare(nameA);
+        });
+      } else if (filters.sort_by === 'created_at') {
+        processedData.sort((a, b) => {
+          const dateA = new Date(a.created_at).getTime();
+          const dateB = new Date(b.created_at).getTime();
+          return filters.sort_order === 'asc' ? dateA - dateB : dateB - dateA;
         });
       }
 
