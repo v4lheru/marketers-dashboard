@@ -91,41 +91,112 @@ export default function Dashboard() {
   };
 
   const filteredCandidates = candidates.filter(candidate => {
-    // Enhanced search filter - includes keywords from expertise and specializations
+    // Dynamic semantic search - expands any query with related terms
     if (searchTerm) {
       const search = searchTerm.toLowerCase();
-      const matchesSearch = (
-        candidate.first_name?.toLowerCase().includes(search) ||
-        candidate.last_name?.toLowerCase().includes(search) ||
-        candidate.email?.toLowerCase().includes(search) ||
+      
+      // Dynamic semantic expansion for any search term
+      const getSemanticTerms = (query: string): string[] => {
+        const semanticMap: Record<string, string[]> = {
+          // Lead Generation & Sales
+          'lead': ['lead generation', 'demand generation', 'lead gen', 'demand gen', 'lead nurturing', 'lead qualification', 'sales funnel', 'conversion funnel'],
+          'demand': ['demand generation', 'demand gen', 'lead generation', 'pipeline generation', 'demand capture', 'market demand'],
+          'funnel': ['sales funnel', 'conversion funnel', 'marketing funnel', 'lead funnel', 'customer journey', 'pipeline'],
+          'conversion': ['conversion rate', 'conversion optimization', 'cro', 'landing page optimization', 'conversion funnel'],
+          
+          // SEO & Search
+          'seo': ['search engine optimization', 'organic search', 'google ranking', 'keyword research', 'technical seo', 'seo strategy'],
+          'search': ['search engine optimization', 'organic search', 'search marketing', 'search strategy', 'google search'],
+          'ranking': ['google ranking', 'search ranking', 'organic ranking', 'seo ranking', 'search visibility'],
+          
+          // Social Media
+          'social': ['social media', 'social marketing', 'community management', 'social strategy', 'social content', 'social campaigns'],
+          'instagram': ['instagram marketing', 'instagram strategy', 'instagram content', 'instagram ads', 'instagram growth'],
+          'facebook': ['facebook marketing', 'facebook ads', 'facebook strategy', 'meta advertising', 'facebook campaigns'],
+          'tiktok': ['tiktok marketing', 'tiktok strategy', 'tiktok content', 'short form video', 'viral content'],
+          
+          // Content & Creative
+          'content': ['content marketing', 'content strategy', 'content creation', 'copywriting', 'editorial', 'blog content'],
+          'copywriting': ['copywriting', 'copy strategy', 'marketing copy', 'sales copy', 'content writing'],
+          'creative': ['creative strategy', 'creative campaigns', 'brand creative', 'creative direction', 'design strategy'],
+          
+          // Analytics & Data
+          'analytics': ['marketing analytics', 'data analysis', 'google analytics', 'performance analytics', 'marketing metrics'],
+          'data': ['data analysis', 'marketing data', 'data-driven marketing', 'data strategy', 'marketing intelligence'],
+          'metrics': ['marketing metrics', 'performance metrics', 'kpi tracking', 'roi analysis', 'marketing measurement'],
+          
+          // Paid Advertising
+          'ads': ['paid advertising', 'google ads', 'facebook ads', 'ppc', 'paid media', 'ad campaigns'],
+          'ppc': ['pay per click', 'ppc campaigns', 'paid search', 'google ads', 'search advertising'],
+          'advertising': ['paid advertising', 'digital advertising', 'ad campaigns', 'media buying', 'ad strategy'],
+          
+          // Email & Automation
+          'email': ['email marketing', 'email campaigns', 'email automation', 'newsletter', 'email strategy'],
+          'automation': ['marketing automation', 'email automation', 'workflow automation', 'martech', 'automation strategy'],
+          
+          // Brand & Strategy
+          'brand': ['brand strategy', 'brand marketing', 'brand positioning', 'brand development', 'brand management'],
+          'strategy': ['marketing strategy', 'digital strategy', 'growth strategy', 'strategic marketing', 'marketing planning'],
+          
+          // Industry & Niches
+          'b2b': ['b2b marketing', 'business to business', 'enterprise marketing', 'b2b strategy', 'b2b sales'],
+          'saas': ['saas marketing', 'software marketing', 'tech marketing', 'subscription marketing', 'product marketing'],
+          'ecommerce': ['ecommerce marketing', 'online retail', 'retail marketing', 'commerce strategy', 'online sales'],
+          'healthcare': ['healthcare marketing', 'medical marketing', 'health tech', 'pharmaceutical marketing', 'wellness marketing'],
+          'fintech': ['fintech marketing', 'financial services', 'banking marketing', 'finance marketing', 'payment marketing'],
+          'web3': ['web3 marketing', 'crypto marketing', 'blockchain marketing', 'defi marketing', 'nft marketing'],
+          
+          // Company Scale
+          'startup': ['startup marketing', 'early stage', 'growth stage', 'startup growth', 'scaling marketing'],
+          'enterprise': ['enterprise marketing', 'large scale', 'corporate marketing', 'enterprise sales', 'b2b enterprise'],
+          'scaleup': ['scaleup marketing', 'growth stage', 'scaling business', 'rapid growth', 'expansion marketing']
+        };
+        
+        const expandedTerms = [query];
+        Object.keys(semanticMap).forEach(key => {
+          if (query.includes(key)) {
+            expandedTerms.push(...semanticMap[key]);
+          }
+        });
+        
+        return expandedTerms;
+      };
+
+      const searchTerms = getSemanticTerms(search);
+      
+      const matchesSearch = searchTerms.some(term => (
+        candidate.first_name?.toLowerCase().includes(term) ||
+        candidate.last_name?.toLowerCase().includes(term) ||
+        candidate.email?.toLowerCase().includes(term) ||
         // Search in marketing channels
         candidate.form_data?.marketingChannels?.some((channel: string) => 
-          channel.toLowerCase().includes(search)
+          channel.toLowerCase().includes(term)
         ) ||
         // Search in marketing services
         candidate.form_data?.marketingServices?.some((service: string) => 
-          service.toLowerCase().includes(search)
+          service.toLowerCase().includes(term)
         ) ||
         // Search in hands-on expertise
         candidate.form_data?.handsOnExpertise?.some((expertise: string) => 
-          expertise.toLowerCase().includes(search)
+          expertise.toLowerCase().includes(term)
         ) ||
         // Search in resume content
         candidate.documents?.some((doc: any) => 
-          doc.extracted_content?.toLowerCase().includes(search)
+          doc.extracted_content?.toLowerCase().includes(term)
         ) ||
         // Search in LinkedIn scraped content
-        candidate.scraped_content?.toLowerCase().includes(search) ||
+        candidate.scraped_content?.toLowerCase().includes(term) ||
         // Search in analysis strengths/weaknesses
         candidate.candidate_analysis?.strengths?.some((strength: string) => 
-          strength.toLowerCase().includes(search)
+          strength.toLowerCase().includes(term)
         ) ||
         candidate.candidate_analysis?.weaknesses?.some((weakness: string) => 
-          weakness.toLowerCase().includes(search)
+          weakness.toLowerCase().includes(term)
         ) ||
         // Search in fit assessment
-        candidate.candidate_analysis?.fit_assessment?.toLowerCase().includes(search)
-      );
+        candidate.candidate_analysis?.fit_assessment?.toLowerCase().includes(term)
+      ));
+      
       if (!matchesSearch) return false;
     }
 
