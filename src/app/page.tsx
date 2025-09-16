@@ -16,6 +16,39 @@ export default function Dashboard() {
   });
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCandidate, setSelectedCandidate] = useState<CandidateWithAnalysis | null>(null);
+  const [isWideLayout, setIsWideLayout] = useState(true);
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
+  // Add toggles to header on mount
+  useEffect(() => {
+    const widthToggleContainer = document.getElementById('width-toggle-container');
+    const darkModeToggleContainer = document.getElementById('dark-mode-toggle-container');
+    
+    if (widthToggleContainer) {
+      widthToggleContainer.innerHTML = `
+        <button id="width-toggle" class="flex items-center gap-2 px-3 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-md">
+          <span>${isWideLayout ? 'Narrow' : 'Wide'} View</span>
+        </button>
+      `;
+      
+      document.getElementById('width-toggle')?.addEventListener('click', () => {
+        setIsWideLayout(!isWideLayout);
+      });
+    }
+    
+    if (darkModeToggleContainer) {
+      darkModeToggleContainer.innerHTML = `
+        <button id="dark-mode-toggle" class="flex items-center gap-2 px-3 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-md">
+          <span>${isDarkMode ? '☀️ Light' : '🌙 Dark'}</span>
+        </button>
+      `;
+      
+      document.getElementById('dark-mode-toggle')?.addEventListener('click', () => {
+        setIsDarkMode(!isDarkMode);
+        document.documentElement.classList.toggle('dark');
+      });
+    }
+  }, [isWideLayout, isDarkMode]);
 
   // Copy submission data function
   const copySubmissionData = async (candidate: CandidateWithAnalysis) => {
@@ -376,7 +409,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className={`space-y-6 ${isWideLayout ? 'w-full' : 'max-w-7xl mx-auto'}`}>
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="bg-white p-6 rounded-lg border shadow-sm">

@@ -19,13 +19,23 @@ export default function RootLayout({
       <body className={inter.className}>
         <div className="min-h-screen bg-background">
           <header className="border-b bg-white">
-            <div className="container mx-auto px-4 py-4">
-              <h1 className="text-2xl font-bold text-gray-900">
-                Marketers Dashboard
-              </h1>
-              <p className="text-sm text-gray-600 mt-1">
-                Review and manage marketing job applicants
-              </p>
+            <div className="w-full px-4 py-4">
+              <div className="flex justify-between items-center">
+                <div className="flex items-center gap-4">
+                  <div>
+                    <h1 className="text-2xl font-bold text-gray-900">
+                      Marketers Dashboard
+                    </h1>
+                    <p className="text-sm text-gray-600 mt-1">
+                      Review and manage marketing job applicants
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-4">
+                  <div id="width-toggle-container"></div>
+                  <div id="dark-mode-toggle-container"></div>
+                </div>
+              </div>
             </div>
           </header>
           <main className="w-full px-6 py-6">
