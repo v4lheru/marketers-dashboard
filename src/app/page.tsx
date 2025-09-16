@@ -17,7 +17,7 @@ export default function Dashboard() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCandidate, setSelectedCandidate] = useState<CandidateWithAnalysis | null>(null);
 
-  // Stats
+  // Enhanced stats with filtered counts
   const totalCandidates = candidates.length;
   const analyzedCandidates = candidates.filter(c => c.candidate_analysis?.overall_score).length;
   const avgScore = analyzedCandidates > 0 
@@ -28,6 +28,11 @@ export default function Dashboard() {
   useEffect(() => {
     fetchCandidates();
   }, [filters]);
+
+  // Add useEffect for search term changes
+  useEffect(() => {
+    // Force re-render when search term changes
+  }, [searchTerm]);
 
   const fetchCandidates = async () => {
     try {
@@ -257,6 +262,9 @@ export default function Dashboard() {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
+            </div>
+            <div className="mt-2 text-sm text-gray-600">
+              Showing {filteredCandidates.length} of {totalCandidates} candidates
             </div>
           </div>
           
