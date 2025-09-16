@@ -17,16 +17,16 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <div className="min-h-screen bg-background">
-          <header className="border-b bg-white">
+        <div className="min-h-screen bg-background dark:bg-gray-900">
+          <header className="border-b bg-white dark:bg-gray-800 dark:border-gray-700">
             <div className="w-full px-4 py-4">
               <div className="flex justify-between items-center">
                 <div className="flex items-center gap-4">
                   <div>
-                    <h1 className="text-2xl font-bold text-gray-900">
+                    <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
                       Marketers Dashboard
                     </h1>
-                    <p className="text-sm text-gray-600 mt-1">
+                    <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
                       Review and manage marketing job applicants
                     </p>
                   </div>
@@ -38,7 +38,7 @@ export default function RootLayout({
               </div>
             </div>
           </header>
-          <main className="w-full px-6 py-6">
+          <main className="w-full px-6 py-6 dark:bg-gray-900">
             {children}
           </main>
         </div>

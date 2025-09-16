@@ -412,49 +412,49 @@ export default function Dashboard() {
     <div className={`space-y-6 ${isWideLayout ? 'w-full' : 'max-w-7xl mx-auto'}`}>
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-white p-6 rounded-lg border shadow-sm">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border dark:border-gray-700 shadow-sm">
           <div className="flex items-center">
             <Users className="h-8 w-8 text-blue-600" />
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Total Candidates</p>
-              <p className="text-2xl font-bold text-gray-900">{totalCandidates}</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Candidates</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{totalCandidates}</p>
             </div>
           </div>
         </div>
         
-        <div className="bg-white p-6 rounded-lg border shadow-sm">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border dark:border-gray-700 shadow-sm">
           <div className="flex items-center">
             <CheckCircle className="h-8 w-8 text-green-600" />
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Analyzed</p>
-              <p className="text-2xl font-bold text-gray-900">{analyzedCandidates}</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Analyzed</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{analyzedCandidates}</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-lg border shadow-sm">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border dark:border-gray-700 shadow-sm">
           <div className="flex items-center">
             <TrendingUp className="h-8 w-8 text-purple-600" />
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Avg Score</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Avg Score</p>
               <p className={`text-2xl font-bold ${getScoreColor(avgScore)}`}>{avgScore}</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-lg border shadow-sm">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border dark:border-gray-700 shadow-sm">
           <div className="flex items-center">
             <Clock className="h-8 w-8 text-yellow-600" />
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Pending</p>
-              <p className="text-2xl font-bold text-gray-900">{pendingCandidates}</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Pending</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{pendingCandidates}</p>
             </div>
           </div>
         </div>
       </div>
 
       {/* Filters and Search */}
-      <div className="bg-white p-4 rounded-lg border shadow-sm">
+      <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border dark:border-gray-700 shadow-sm">
         <div className="flex flex-col md:flex-row gap-4">
           <div className="flex-1">
             <div className="relative">
@@ -467,7 +467,7 @@ export default function Dashboard() {
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            <div className="mt-2 text-sm text-gray-600">
+            <div className="mt-2 text-sm text-gray-600 dark:text-gray-300">
               Showing {filteredCandidates.length} of {totalCandidates} candidates
             </div>
           </div>
@@ -562,38 +562,38 @@ export default function Dashboard() {
       </div>
 
       {/* Candidates Table */}
-      <div className="bg-white rounded-lg border shadow-sm overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-lg border dark:border-gray-700 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full divide-y divide-gray-200" style={{minWidth: '1400px'}}>
-            <thead className="bg-gray-50">
+          <table className="w-full divide-y divide-gray-200 dark:divide-gray-700" style={{minWidth: '1400px'}}>
+            <thead className="bg-gray-50 dark:bg-gray-700">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                   Candidate
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                   Type
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                   Specializations
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                   Key Skills
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                   Rate/Salary
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                   Community
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                   Score
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                   Actions
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
               {filteredCandidates.map((candidate) => {
                 // Get specializations from marketing channels and services
                 const specializations = [
