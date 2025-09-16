@@ -130,18 +130,18 @@ export default function Dashboard() {
     }
 
     // Enhanced specialization filter with semantic matching
-    if (filters.specialization) {
-      const searchTerm = filters.specialization.toLowerCase();
+    if (filters.specialization || filters.specialization_enhanced) {
+      const searchTerm = (filters.specialization || filters.specialization_enhanced || '').toLowerCase();
       
       // Check form data specializations
       const hasFormSpecialization = [
         ...(candidate.form_data?.marketingChannels || []),
         ...(candidate.form_data?.marketingServices || [])
       ].some((spec: string) => 
-        spec.toLowerCase().includes(searchTerm)
+        spec.toLowerCase().includes(searchTerm.split(' ')[0]) // Use first word for form matching
       );
 
-      // Semantic matching for all specializations
+      // Semantic matching with enhanced multi-word queries
       let hasSemanticMatch = false;
       const allContent = [
         candidate.scraped_content,
@@ -151,7 +151,27 @@ export default function Dashboard() {
         ...(candidate.documents?.map((doc: any) => doc.extracted_content) || [])
       ].filter(Boolean).join(' ').toLowerCase();
 
-      const semanticKeywords: Record<string, string[]> = {
+      // Enhanced semantic keywords with multi-word phrases
+      const enhancedSemanticKeywords: Record<string, string[]> = {
+        'search engine optimization strategy': ['search engine optimization strategy', 'seo strategy development', 'organic search strategy', 'technical seo expertise', 'seo content optimization'],
+        'social media strategy planning': ['social media strategy', 'social content planning', 'community management strategy', 'social media campaign planning', 'social brand management'],
+        'content marketing strategy': ['content marketing strategy', 'content strategy development', 'editorial strategy planning', 'content distribution strategy', 'thought leadership content'],
+        'email marketing automation': ['email marketing automation', 'email campaign automation', 'email workflow optimization', 'email nurturing sequences', 'email marketing strategy'],
+        'marketing analytics reporting': ['marketing analytics strategy', 'data-driven marketing', 'marketing performance analysis', 'marketing metrics reporting', 'marketing roi analysis'],
+        'brand strategy development': ['brand strategy development', 'brand positioning strategy', 'brand identity development', 'brand marketing strategy', 'brand experience design'],
+        'paid advertising optimization': ['paid advertising optimization', 'ppc campaign optimization', 'ad spend optimization', 'paid media strategy', 'performance advertising'],
+        'conversion rate optimization': ['conversion rate optimization', 'cro strategy implementation', 'landing page optimization', 'conversion funnel optimization', 'user experience optimization'],
+        'lead generation strategy': ['lead generation strategy', 'demand generation strategy', 'lead nurturing strategy', 'sales funnel optimization', 'lead qualification process'],
+        'influencer partnership management': ['influencer partnership strategy', 'influencer campaign management', 'creator partnership programs', 'influencer marketing strategy', 'partnership marketing'],
+        'product marketing strategy': ['product marketing strategy', 'go-to-market strategy', 'product launch strategy', 'product positioning strategy', 'product messaging strategy'],
+        'public relations strategy': ['public relations strategy', 'pr campaign management', 'media relations strategy', 'crisis communication management', 'brand reputation management'],
+        'digital marketing strategy': ['digital marketing strategy', 'digital transformation strategy', 'omnichannel marketing strategy', 'digital growth strategy', 'integrated marketing strategy'],
+        'marketing automation workflows': ['marketing automation strategy', 'workflow automation design', 'marketing technology optimization', 'automation campaign management', 'martech stack management'],
+        'event marketing strategy': ['event marketing strategy', 'experiential marketing campaigns', 'event campaign management', 'trade show marketing', 'conference marketing strategy']
+      };
+
+      // Basic semantic keywords (for simple filter)
+      const basicSemanticKeywords: Record<string, string[]> = {
         'lead generation': ['lead gen', 'demand gen', 'lead generation', 'demand generation', 'conversion', 'funnel', 'pipeline'],
         'pr': ['public relations', 'pr ', 'communications', 'media relations', 'press'],
         'seo': ['seo', 'search engine', 'organic search', 'google ranking', 'keyword'],
@@ -169,8 +189,13 @@ export default function Dashboard() {
         'event': ['event', 'experiential', 'conference', 'trade show', 'events']
       };
 
-      if (semanticKeywords[searchTerm]) {
-        hasSemanticMatch = semanticKeywords[searchTerm].some(keyword => 
+      // Use enhanced keywords for enhanced filter, basic for simple filter
+      const keywordsToUse = filters.specialization_enhanced 
+        ? enhancedSemanticKeywords[searchTerm] 
+        : basicSemanticKeywords[searchTerm];
+
+      if (keywordsToUse) {
+        hasSemanticMatch = keywordsToUse.some(keyword => 
           allContent.includes(keyword)
         );
       }
@@ -282,9 +307,9 @@ export default function Dashboard() {
             <select
               className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
               value={filters.specialization || ''}
-              onChange={(e) => setFilters({...filters, specialization: e.target.value || undefined})}
+              onChange={(e) => setFilters({...filters, specialization: e.target.value || undefined, specialization_enhanced: undefined})}
             >
-              <option value="">All Specializations</option>
+              <option value="">Basic Specializations</option>
               <option value="SEO">SEO/SEM & Performance</option>
               <option value="Social">Social Media</option>
               <option value="Content">Content Marketing</option>
@@ -300,6 +325,29 @@ export default function Dashboard() {
               <option value="Digital Strategy">Digital Strategy</option>
               <option value="Automation">Marketing Automation</option>
               <option value="Event">Event & Experiential</option>
+            </select>
+
+            <select
+              className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+              value={filters.specialization_enhanced || ''}
+              onChange={(e) => setFilters({...filters, specialization_enhanced: e.target.value || undefined, specialization: undefined})}
+            >
+              <option value="">Enhanced Search</option>
+              <option value="search engine optimization strategy">SEO Strategy Expert</option>
+              <option value="social media strategy planning">Social Strategy Expert</option>
+              <option value="content marketing strategy">Content Strategy Expert</option>
+              <option value="email marketing automation">Email Automation Expert</option>
+              <option value="marketing analytics reporting">Analytics Expert</option>
+              <option value="brand strategy development">Brand Strategy Expert</option>
+              <option value="paid advertising optimization">Paid Ads Expert</option>
+              <option value="conversion rate optimization">CRO Expert</option>
+              <option value="lead generation strategy">Lead Gen Expert</option>
+              <option value="influencer partnership management">Influencer Expert</option>
+              <option value="product marketing strategy">Product Marketing Expert</option>
+              <option value="public relations strategy">PR Expert</option>
+              <option value="digital marketing strategy">Digital Strategy Expert</option>
+              <option value="marketing automation workflows">Automation Expert</option>
+              <option value="event marketing strategy">Event Marketing Expert</option>
             </select>
 
             <select
