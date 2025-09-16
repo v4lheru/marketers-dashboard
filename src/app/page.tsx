@@ -86,15 +86,46 @@ export default function Dashboard() {
   };
 
   const filteredCandidates = candidates.filter(candidate => {
-    // Search filter
+    // Enhanced search filter - includes keywords from expertise and specializations
     if (searchTerm) {
       const search = searchTerm.toLowerCase();
       const matchesSearch = (
         candidate.first_name?.toLowerCase().includes(search) ||
         candidate.last_name?.toLowerCase().includes(search) ||
-        candidate.email?.toLowerCase().includes(search)
+        candidate.email?.toLowerCase().includes(search) ||
+        // Search in marketing channels
+        candidate.form_data?.marketingChannels?.some((channel: string) => 
+          channel.toLowerCase().includes(search)
+        ) ||
+        // Search in marketing services
+        candidate.form_data?.marketingServices?.some((service: string) => 
+          service.toLowerCase().includes(search)
+        ) ||
+        // Search in hands-on expertise
+        candidate.form_data?.handsOnExpertise?.some((expertise: string) => 
+          expertise.toLowerCase().includes(search)
+        )
       );
       if (!matchesSearch) return false;
+    }
+
+    // Specialization filter
+    if (filters.specialization) {
+      const hasSpecialization = [
+        ...(candidate.form_data?.marketingChannels || []),
+        ...(candidate.form_data?.marketingServices || [])
+      ].some((spec: string) => 
+        spec.toLowerCase().includes(filters.specialization!.toLowerCase())
+      );
+      if (!hasSpecialization) return false;
+    }
+
+    // Community filter
+    if (filters.community) {
+      const communityMatch = filters.community === 'yes' 
+        ? candidate.form_data?.communityParticipation === true
+        : candidate.form_data?.communityParticipation === false;
+      if (!communityMatch) return false;
     }
 
     return true;
@@ -172,19 +203,7 @@ export default function Dashboard() {
             </div>
           </div>
           
-          <div className="flex gap-2">
-            <select
-              className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
-              value={filters.status || ''}
-              onChange={(e) => setFilters({...filters, status: e.target.value || undefined})}
-            >
-              <option value="">All Status</option>
-              <option value="pending">Pending</option>
-              <option value="processing">Processing</option>
-              <option value="analyzed">Analyzed</option>
-              <option value="failed">Failed</option>
-            </select>
-
+          <div className="flex gap-2 flex-wrap">
             <select
               className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
               value={filters.looking_for || ''}
@@ -195,6 +214,31 @@ export default function Dashboard() {
               <option value="freelance">Freelance</option>
             </select>
 
+            <select
+              className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+              value={filters.specialization || ''}
+              onChange={(e) => setFilters({...filters, specialization: e.target.value || undefined})}
+            >
+              <option value="">All Specializations</option>
+              <option value="SEO">SEO/SEM</option>
+              <option value="Social">Social Media</option>
+              <option value="Content">Content Marketing</option>
+              <option value="Email">Email Marketing</option>
+              <option value="Analytics">Analytics & Data</option>
+              <option value="Brand">Brand & Creative</option>
+              <option value="Performance">Performance Marketing</option>
+              <option value="Automation">Marketing Automation</option>
+            </select>
+
+            <select
+              className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+              value={filters.community || ''}
+              onChange={(e) => setFilters({...filters, community: e.target.value || undefined})}
+            >
+              <option value="">All Community</option>
+              <option value="yes">Community: Yes</option>
+              <option value="no">Community: No</option>
+            </select>
 
             <select
               className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
@@ -228,19 +272,19 @@ export default function Dashboard() {
                   Type
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Score
+                  Specializations
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
+                  Key Skills
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Applied
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Documents
+                  Rate/Salary
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Community
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Score
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Actions
@@ -248,60 +292,91 @@ export default function Dashboard() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {filteredCandidates.map((candidate) => (
-                <tr key={candidate.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div>
-                      <div className="text-sm font-medium text-gray-900">
-                        {candidate.first_name} {candidate.last_name}
+              {filteredCandidates.map((candidate) => {
+                // Get specializations from marketing channels and services
+                const specializations = [
+                  ...(candidate.form_data?.marketingChannels || []),
+                  ...(candidate.form_data?.marketingServices || [])
+                ].slice(0, 3); // Show max 3 specializations
+
+                // Get key skills from hands-on expertise
+                const keySkills = candidate.form_data?.handsOnExpertise?.slice(0, 2) || [];
+
+                // Get rate information
+                const rate = candidate.form_data?.hourlyRate || candidate.form_data?.desiredSalary || 'Not specified';
+
+                return (
+                  <tr key={candidate.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4">
+                      <div>
+                        <div className="text-sm font-medium text-gray-900">
+                          {candidate.first_name} {candidate.last_name}
+                        </div>
+                        <div className="text-sm text-gray-500">{candidate.email}</div>
                       </div>
-                      <div className="text-sm text-gray-500">{candidate.email}</div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                      candidate.looking_for === 'fulltime' 
-                        ? 'bg-blue-100 text-blue-800' 
-                        : 'bg-green-100 text-green-800'
-                    }`}>
-                      {candidate.looking_for === 'fulltime' ? 'Full-time' : 'Freelance'}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`text-sm font-medium ${getScoreColor(candidate.candidate_analysis?.overall_score)}`}>
-                      {candidate.candidate_analysis?.overall_score || 'N/A'}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(candidate.status)}`}>
-                      {candidate.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {formatDate(candidate.created_at)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {candidate.document_count} files
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                      candidate.form_data?.communityParticipation 
-                        ? 'bg-purple-100 text-purple-800' 
-                        : 'bg-gray-100 text-gray-800'
-                    }`}>
-                      {candidate.form_data?.communityParticipation ? 'Yes' : 'No'}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <button
-                      onClick={() => setSelectedCandidate(candidate)}
-                      className="text-blue-600 hover:text-blue-900"
-                    >
-                      View Details
-                    </button>
-                  </td>
-                </tr>
-              ))}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                        candidate.looking_for === 'fulltime' 
+                          ? 'bg-blue-100 text-blue-800' 
+                          : 'bg-green-100 text-green-800'
+                      }`}>
+                        {candidate.looking_for === 'fulltime' ? 'Full-time' : 'Freelance'}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex flex-wrap gap-1">
+                        {specializations.map((spec, index) => (
+                          <span key={index} className="inline-flex px-2 py-1 text-xs font-medium bg-indigo-100 text-indigo-800 rounded">
+                            {spec.replace(/^(Content Marketing & |Social Media |Email Marketing & |SEO\/SEM & |Brand & |Marketing |& )/, '').trim()}
+                          </span>
+                        ))}
+                        {specializations.length === 0 && (
+                          <span className="text-xs text-gray-400">No specializations</span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="text-xs text-gray-700 max-w-xs">
+                        {keySkills.length > 0 ? (
+                          keySkills.map((skill, index) => (
+                            <div key={index} className="truncate mb-1">
+                              • {skill.trim()}
+                            </div>
+                          ))
+                        ) : (
+                          <span className="text-gray-400">No key skills listed</span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                      {rate}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                        candidate.form_data?.communityParticipation 
+                          ? 'bg-purple-100 text-purple-800' 
+                          : 'bg-gray-100 text-gray-800'
+                      }`}>
+                        {candidate.form_data?.communityParticipation ? 'Yes' : 'No'}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`text-sm font-medium ${getScoreColor(candidate.candidate_analysis?.overall_score)}`}>
+                        {candidate.candidate_analysis?.overall_score || 'N/A'}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <button
+                        onClick={() => setSelectedCandidate(candidate)}
+                        className="text-blue-600 hover:text-blue-900"
+                      >
+                        View Details
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

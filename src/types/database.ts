@@ -59,6 +59,8 @@ export interface CandidateWithAnalysis extends Application {
 export interface FilterOptions {
   status?: string;
   looking_for?: string;
+  specialization?: string;
+  community?: string;
   score_min?: number;
   score_max?: number;
   search?: string;
