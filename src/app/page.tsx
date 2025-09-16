@@ -104,20 +104,73 @@ export default function Dashboard() {
         // Search in hands-on expertise
         candidate.form_data?.handsOnExpertise?.some((expertise: string) => 
           expertise.toLowerCase().includes(search)
-        )
+        ) ||
+        // Search in resume content
+        candidate.documents?.some((doc: any) => 
+          doc.extracted_content?.toLowerCase().includes(search)
+        ) ||
+        // Search in LinkedIn scraped content
+        candidate.scraped_content?.toLowerCase().includes(search) ||
+        // Search in analysis strengths/weaknesses
+        candidate.candidate_analysis?.strengths?.some((strength: string) => 
+          strength.toLowerCase().includes(search)
+        ) ||
+        candidate.candidate_analysis?.weaknesses?.some((weakness: string) => 
+          weakness.toLowerCase().includes(search)
+        ) ||
+        // Search in fit assessment
+        candidate.candidate_analysis?.fit_assessment?.toLowerCase().includes(search)
       );
       if (!matchesSearch) return false;
     }
 
-    // Specialization filter
+    // Enhanced specialization filter with semantic matching
     if (filters.specialization) {
-      const hasSpecialization = [
+      const searchTerm = filters.specialization.toLowerCase();
+      
+      // Check form data specializations
+      const hasFormSpecialization = [
         ...(candidate.form_data?.marketingChannels || []),
         ...(candidate.form_data?.marketingServices || [])
       ].some((spec: string) => 
-        spec.toLowerCase().includes(filters.specialization!.toLowerCase())
+        spec.toLowerCase().includes(searchTerm)
       );
-      if (!hasSpecialization) return false;
+
+      // Semantic matching for all specializations
+      let hasSemanticMatch = false;
+      const allContent = [
+        candidate.scraped_content,
+        candidate.candidate_analysis?.fit_assessment,
+        ...(candidate.candidate_analysis?.strengths || []),
+        ...(candidate.candidate_analysis?.weaknesses || []),
+        ...(candidate.documents?.map((doc: any) => doc.extracted_content) || [])
+      ].filter(Boolean).join(' ').toLowerCase();
+
+      const semanticKeywords: Record<string, string[]> = {
+        'lead generation': ['lead gen', 'demand gen', 'lead generation', 'demand generation', 'conversion', 'funnel', 'pipeline'],
+        'pr': ['public relations', 'pr ', 'communications', 'media relations', 'press'],
+        'seo': ['seo', 'search engine', 'organic search', 'google ranking', 'keyword'],
+        'social': ['social media', 'instagram', 'facebook', 'twitter', 'linkedin', 'tiktok', 'social'],
+        'content': ['content marketing', 'copywriting', 'blog', 'content creation', 'editorial'],
+        'email': ['email marketing', 'email campaigns', 'newsletter', 'email automation', 'mailchimp'],
+        'analytics': ['analytics', 'data analysis', 'google analytics', 'reporting', 'metrics', 'kpi'],
+        'brand': ['brand', 'branding', 'creative', 'design', 'brand strategy'],
+        'paid advertising': ['paid ads', 'google ads', 'facebook ads', 'ppc', 'paid advertising', 'ad campaigns'],
+        'conversion': ['conversion', 'cro', 'optimization', 'a/b testing', 'landing page'],
+        'influencer': ['influencer', 'partnership', 'collaboration', 'creator'],
+        'product marketing': ['product marketing', 'product launch', 'go-to-market', 'positioning'],
+        'digital strategy': ['digital strategy', 'digital marketing', 'marketing strategy', 'growth'],
+        'automation': ['automation', 'marketing automation', 'workflows', 'zapier', 'hubspot'],
+        'event': ['event', 'experiential', 'conference', 'trade show', 'events']
+      };
+
+      if (semanticKeywords[searchTerm]) {
+        hasSemanticMatch = semanticKeywords[searchTerm].some(keyword => 
+          allContent.includes(keyword)
+        );
+      }
+
+      if (!hasFormSpecialization && !hasSemanticMatch) return false;
     }
 
     // Rate filter
