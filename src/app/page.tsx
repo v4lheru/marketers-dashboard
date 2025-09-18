@@ -18,6 +18,8 @@ export default function Dashboard() {
   const [selectedCandidate, setSelectedCandidate] = useState<CandidateWithAnalysis | null>(null);
   const [isWideLayout, setIsWideLayout] = useState(true);
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [selectedCandidateIds, setSelectedCandidateIds] = useState<Set<string>>(new Set());
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Add toggles to header on mount
   useEffect(() => {
@@ -49,6 +51,92 @@ export default function Dashboard() {
       });
     }
   }, [isWideLayout, isDarkMode]);
+
+  // Selection handlers
+  const handleSelectCandidate = (candidateId: string, isSelected: boolean) => {
+    const newSelection = new Set(selectedCandidateIds);
+    if (isSelected) {
+      newSelection.add(candidateId);
+    } else {
+      newSelection.delete(candidateId);
+    }
+    setSelectedCandidateIds(newSelection);
+  };
+
+  const handleSelectAll = (isSelected: boolean) => {
+    if (isSelected) {
+      const allIds = new Set(filteredCandidates.map(c => c.id));
+      setSelectedCandidateIds(allIds);
+    } else {
+      setSelectedCandidateIds(new Set());
+    }
+  };
+
+  // Delete functionality
+  const deleteSelectedCandidates = async () => {
+    if (selectedCandidateIds.size === 0) {
+      alert('Please select candidates to delete.');
+      return;
+    }
+
+    const confirmMessage = `Are you sure you want to delete ${selectedCandidateIds.size} candidate(s)? This action cannot be undone and will remove all associated data including analyses and documents.`;
+    
+    if (!confirm(confirmMessage)) {
+      return;
+    }
+
+    setIsDeleting(true);
+    
+    try {
+      const candidateIdsArray = Array.from(selectedCandidateIds);
+      
+      // Delete in the correct order due to foreign key constraints
+      // 1. Delete candidate_analyses first
+      const { error: analysesError } = await supabase
+        .from('candidate_analyses')
+        .delete()
+        .in('application_id', candidateIdsArray);
+
+      if (analysesError) {
+        console.error('Error deleting candidate analyses:', analysesError);
+        throw new Error('Failed to delete candidate analyses');
+      }
+
+      // 2. Delete candidate_documents
+      const { error: documentsError } = await supabase
+        .from('candidate_documents')
+        .delete()
+        .in('application_id', candidateIdsArray);
+
+      if (documentsError) {
+        console.error('Error deleting candidate documents:', documentsError);
+        throw new Error('Failed to delete candidate documents');
+      }
+
+      // 3. Finally delete applications
+      const { error: applicationsError } = await supabase
+        .from('applications')
+        .delete()
+        .in('id', candidateIdsArray);
+
+      if (applicationsError) {
+        console.error('Error deleting applications:', applicationsError);
+        throw new Error('Failed to delete applications');
+      }
+
+      // Success - refresh the data and clear selection
+      await fetchCandidates();
+      setSelectedCandidateIds(new Set());
+      
+      alert(`Successfully deleted ${candidateIdsArray.length} candidate(s).`);
+      
+    } catch (error) {
+      console.error('Error deleting candidates:', error);
+      alert(`Failed to delete candidates: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   // Copy submission data function
   const copySubmissionData = async (candidate: CandidateWithAnalysis) => {
@@ -561,12 +649,47 @@ export default function Dashboard() {
         </div>
       </div>
 
+      {/* Bulk Actions */}
+      {selectedCandidateIds.size > 0 && (
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <span className="text-sm font-medium text-red-800 dark:text-red-200">
+                {selectedCandidateIds.size} candidate(s) selected
+              </span>
+            </div>
+            <button
+              onClick={deleteSelectedCandidates}
+              disabled={isDeleting}
+              className="bg-red-600 hover:bg-red-700 disabled:bg-red-400 text-white px-4 py-2 rounded-md text-sm font-medium flex items-center gap-2"
+            >
+              {isDeleting ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  Deleting...
+                </>
+              ) : (
+                <>Delete Selected</>
+              )}
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Candidates Table */}
       <div className="bg-white dark:bg-gray-800 rounded-lg border dark:border-gray-700 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full divide-y divide-gray-200 dark:divide-gray-700" style={{minWidth: '1400px'}}>
+          <table className="w-full divide-y divide-gray-200 dark:divide-gray-700" style={{minWidth: '1500px'}}>
             <thead className="bg-gray-50 dark:bg-gray-700">
               <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  <input
+                    type="checkbox"
+                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    checked={filteredCandidates.length > 0 && filteredCandidates.every(c => selectedCandidateIds.has(c.id))}
+                    onChange={(e) => handleSelectAll(e.target.checked)}
+                  />
+                </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                   Candidate
                 </th>
@@ -609,6 +732,14 @@ export default function Dashboard() {
 
                 return (
                   <tr key={candidate.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4">
+                      <input
+                        type="checkbox"
+                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        checked={selectedCandidateIds.has(candidate.id)}
+                        onChange={(e) => handleSelectCandidate(candidate.id, e.target.checked)}
+                      />
+                    </td>
                     <td className="px-6 py-4">
                       <div>
                         <div 
